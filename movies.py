@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import sqlite3
 import requests
-import json
 
 
 if __name__ == "__main__":
@@ -21,3 +20,12 @@ if __name__ == "__main__":
     print(jr['Year'])
 
     conn.close()
+
+    """
+    https://stackoverflow.com/questions/7831371/is-there-a-way-to-get-a-list-of-column-names-in-sqlite
+
+    https://medium.com/@mokashitejas/fetch-data-using-json-api-and-insert-into-sqlite3-db-83f25bc49864
+
+    https://stackoverflow.com/questions/8811783/convert-json-to-sqlite-in-python-how-to-map-json-keys-to-database-columns-prop
+
+    """
