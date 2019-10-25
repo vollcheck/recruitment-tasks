@@ -1,13 +1,23 @@
 #!/usr/bin/python
-import csv
-
-
-def download():
-    with open("movies.csv", newline='') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            print(row)
+import sqlite3
+import requests
+import json
 
 
 if __name__ == "__main__":
-    download()
+    API_KEY = '37ac9525'
+
+    conn = sqlite3.connect('movies.sqlite')
+    c = conn.cursor()
+    c.execute('''SELECT title FROM movies''')
+
+    con = c.fetchone()[0]
+
+    link = f'http://www.omdbapi.com/?t={con}&apikey={API_KEY}'
+    response = requests.get(link)
+
+    print(response.status_code)
+    jr = response.json()
+    print(jr['Year'])
+
+    conn.close()
