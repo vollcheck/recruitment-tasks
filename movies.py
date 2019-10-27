@@ -1,8 +1,6 @@
 #!/usr/bin/python
-import sqlite3
 import requests
-import pprint
-import json
+import sqlite3
 
 
 if __name__ == "__main__":
@@ -19,21 +17,17 @@ if __name__ == "__main__":
     link = f'http://www.omdbapi.com/?t={con}&apikey={API_KEY}'
     content = requests.get(link).json()
 
-    print(type(content))
-
-    columns = ['Title', 'Year', 'Runtime',
+    columns = ['Year', 'Runtime',  # 'Title' amd 'id' can be omitted
                'Genre', 'Director', 'Actors', 'Writer',
                'Language', 'Country', 'Awards',
                'imdbRating', 'imdbVotes', 'BoxOffice']
 
+    # dt = [f"{col}: {content[col]}" for col in columns]
+    dt = [content[col] for col in columns]
+    print(dt)
+
     # END
     conn.close()
-
-    # for col in columns:
-    #     print(f"{col}: {content[col]}")
-
-    dt = [f"{col}: {content[col]}" for col in columns]
-    print(dt)
 
     """
     # for col, data in zip(columns, content):
