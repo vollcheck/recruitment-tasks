@@ -2,6 +2,8 @@
 import sqlite3
 import requests
 import pprint
+import json
+
 
 if __name__ == "__main__":
     # CONST
@@ -15,33 +17,29 @@ if __name__ == "__main__":
 
     # RESPONSE
     link = f'http://www.omdbapi.com/?t={con}&apikey={API_KEY}'
-    response = requests.get(link)
+    content = requests.get(link).json()
 
-    # TESTING
-    # jr = response.json()
-    d = response.json()
-    pp = pprint.PrettyPrinter(indent=4)
-    # pp.pprint(d)
-    # print(d["Year"])
+    print(type(content))
 
-    columns = ['title', 'year', 'runtime',
-               'genre', 'director', 'cast', 'writer',
-               'language', 'country', 'awards',
-               'imdb_rating', 'imdb_votes', 'box_office']
-
-
-    #c.execute('''INSERT INTO movies ''')
-    # print(type(response.json()))
+    columns = ['Title', 'Year', 'Runtime',
+               'Genre', 'Director', 'Actors', 'Writer',
+               'Language', 'Country', 'Awards',
+               'imdbRating', 'imdbVotes', 'BoxOffice']
 
     # END
     conn.close()
 
-    for col, data in zip(columns, d):
-        print(f"{col}: {data}")
+    # for col in columns:
+    #     print(f"{col}: {content[col]}")
 
+    dt = [f"{col}: {content[col]}" for col in columns]
+    print(dt)
 
     """
+    # for col, data in zip(columns, content):
+    #     print(f"{col}: {data}")
 
+    http://www.omdbapi.com/?t=The Shawshank Redemption&apikey=37ac9525
 
     https://stackoverflow.com/questions/7831371/is-there-a-way-to-get-a-list-of-column-names-in-sqlite
 
