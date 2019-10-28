@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import requests
 import sqlite3
-
+from sqlite3 import Error
 
 if __name__ == "__main__":
     # CONST
@@ -17,14 +17,21 @@ if __name__ == "__main__":
     link = f'http://www.omdbapi.com/?t={con}&apikey={API_KEY}'
     content = requests.get(link).json()
 
-    columns = ['Year', 'Runtime',  # 'Title' amd 'id' can be omitted
+    columns = ['Title', 'Year', 'Runtime',  # 'Title' amd 'id' can be omitted
                'Genre', 'Director', 'Actors', 'Writer',
                'Language', 'Country', 'Awards',
                'imdbRating', 'imdbVotes', 'BoxOffice']
 
     # dt = [f"{col}: {content[col]}" for col in columns]
     dt = [content[col] for col in columns]
-    print(dt)
+    # print(dt)
+
+    query = '''INSERT INTO movies VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?); '''
+
+    try:
+        c.execute(query, dt)
+    except Error as e:
+        print(e)
 
     # END
     conn.close()
