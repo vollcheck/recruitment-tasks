@@ -29,13 +29,16 @@ if __name__ == "__main__":
     query = '''INSERT INTO movies ('Title', 'Year', 'Runtime',
                'Genre', 'Director', 'Cast', 'Writer',
                'Language', 'Country', 'Awards',
-               'imdb_rating', 'imdb_votes', 'Box_office') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?); '''
+               'imdb_rating', 'imdb_votes', 'Box_office')
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+               WHERE TITLE="The Shawshank Redemption"; '''
 
     try:
         c.execute(query, dt)
     except Error as e:
         print(e)
 
+    conn.commit()
     # END
     conn.close()
 
