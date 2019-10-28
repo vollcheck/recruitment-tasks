@@ -26,7 +26,10 @@ if __name__ == "__main__":
     dt = [content[col] for col in columns]
     # print(dt)
 
-    query = '''INSERT INTO movies VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?); '''
+    query = '''INSERT INTO movies ('Title', 'Year', 'Runtime',
+               'Genre', 'Director', 'Cast', 'Writer',
+               'Language', 'Country', 'Awards',
+               'imdb_rating', 'imdb_votes', 'Box_office') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?); '''
 
     try:
         c.execute(query, dt)
