@@ -6,91 +6,58 @@ import argparse
 
 
 class DataLead():
-    def __init__(self, db, args):
+    def __init__(self, db, API_KEY, args):
         self.db = db
+        self.API_KEY = API_KEY
         self.args = args
 
-    def check_db():
-        """
-        Used for checking if there is a film's missing data
-        """
-        pass
+    def download_single_movie(self):
+        try:
+            conn = sqlite3.connect(self.db)
+            print("Database is ready!")
+        except Error as e:
+            print(e)
 
-    def download_movie():
-        """
-        Used for filling the gaps for specified movie with the data from API
-        """
-        pass
+        # Make a cursor for playing with db
+        c = conn.cursor()
+        c.execute('''SELECT title FROM movies WHERE id=1;''')
+        title = c.fetchall()
 
-    def sort_by():
-        pass
+        # Requests response
+        link = f'http://www.omdbapi.com/?t={title}&apikey={self.API_KEY}'
+        content = requests.get(link).json()
 
-    def filter_by():
-        pass
+        columns = ['Title', 'Year', 'Runtime',
+                   'Genre', 'Director', 'Actors', 'Writer',
+                   'Language', 'Country', 'Awards',
+                   'imdbRating', 'imdbVotes', 'BoxOffice']
 
-    def compare_by():
-        pass
+        dt = [content[col] for col in columns]
 
-    def add_movie():
-        pass
+        print(dt)
 
-    def show_highscores():
-        pass
+        # query = '''UPDATE MOVIES ('Title', 'Year', 'Runtime',
+        # 'Genre', 'Director', 'Cast', 'Writer',
+        # 'Language', 'Country', 'Awards',
+        # 'imdb_rating', 'imdb_votes', 'Box_office')
+        # VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+        # WHERE TITLE="The Shawshank Redemption"; '''
 
-def db_con():
-    conn = sqlite3.connect('movies.sqlite')
-    c = conn.cursor()
-    c.execute('''SELECT title FROM movies''')
-    # con = c.fetchone()[0]
-    data = c.fetchall()
-    print(type(data))
-    # conn.commit()
-    # END
-    conn.close()
+        # https://www.w3schools.com/sql/sql_update.asp
 
-
-def rest():
-    # CONST
-    API_KEY = '37ac9525'
-
-    # RESPONSE
-    link = f'http://www.omdbapi.com/?t={con}&apikey={API_KEY}'
-    content = requests.get(link).json()
-
-    columns = ['Title', 'Year', 'Runtime',  # 'Title' amd 'id' can be omitted
-               'Genre', 'Director', 'Actors', 'Writer',
-               'Language', 'Country', 'Awards',
-               'imdbRating', 'imdbVotes', 'BoxOffice']
-
-    dt = [content[col] for col in columns]
-
-    query = '''INSERT INTO movies ('Title', 'Year', 'Runtime',
-               'Genre', 'Director', 'Cast', 'Writer',
-               'Language', 'Country', 'Awards',
-               'imdb_rating', 'imdb_votes', 'Box_office')
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-               WHERE TITLE="The Shawshank Redemption"; '''
-
-    # try:
-    #     c.execute(query, dt)
-    # except Error as e:
-    #     print(e)
-
-
+        # # conn.commit()
+        # # END
+        conn.close()
 
 
 if __name__ == "__main__":
+    API_KEY = '37ac9525'
 
-    # DB CONNECTION
-    db_con()
+    DL = DataLead('movies.sqlite', API_KEY, 'columns')
+    DL.download_single_movie()
 
-    """
-    http://www.omdbapi.com/?t=The Shawshank Redemption&apikey=37ac9525
-
-    https://stackoverflow.com/questions/7831371/is-there-a-way-to-get-a-list-of-column-names-in-sqlite
-
-    https://medium.com/@mokashitejas/fetch-data-using-json-api-and-insert-into-sqlite3-db-83f25bc49864
-
-    https://stackoverflow.com/questions/8811783/convert-json-to-sqlite-in-python-how-to-map-json-keys-to-database-columns-prop
-
-    """
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--sort_by", help="sort movies by columns")
+    # args = parser.parse_args()
+    # if args.sort_by:
+    #     print("Sorted films go as follow...")
