@@ -24,6 +24,9 @@ if __name__ == "__main__":
     # pp.pprint(d)
     # print(d["Year"])
 
+    f = open("response.txt", "w")
+    f.write(str(d))
+
     columns = ['title', 'year', 'runtime',
                'genre', 'director', 'cast', 'writer',
                'language', 'country', 'awards',
