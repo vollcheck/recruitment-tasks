@@ -5,10 +5,9 @@ import requests, argparse, contextlib
 
 
 class DataLead():
-    def __init__(self, dbname, API_KEY, args):
+    def __init__(self, dbname, API_KEY):
         self.dbname = dbname
         self.API_KEY = API_KEY
-        self.args = args
         self.db = self.open_connection()
 
     def open_connection(self):
@@ -23,6 +22,10 @@ class DataLead():
 
     def do_sth(self):
         print("do_sth function is printing")
+        c = self.db.cursor()
+        c.execute('''select * from movies where id=1''')
+        title = c.fetchall()[0]
+        print(title)
 
     def close(self):
         if self.db:
@@ -38,19 +41,12 @@ if __name__ == "__main__":
     parser.add_argument("--sort_by", help="sort movies by columns")
     args = parser.parse_args()
 
-    if not any(vars(args).values()):
-        print("There are no arguments passed222!")
-    elif args.sort_by:
-        print("Sorted films go as follow...")
-
-        with contextlib.closing(
-                DataLead(
-                    'movies.sqlite',
-                    API_KEY,
-                    args.sort_by)
-        ) as DL:
+    with contextlib.closing(DataLead('movies.sqlite', API_KEY)) as DL:
+        if not any(vars(args).values()):
+            print("There are no arguments passed222!")
+        elif args.sort_by:
+            print("Sorted films go as follow...")
             DL.do_sth()
-
 
     #DL.create_connection()
     #DL = DataLead('movies.sqlite', API_KEY, 'randomargumentjustfortest')
