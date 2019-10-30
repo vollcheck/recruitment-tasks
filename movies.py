@@ -23,16 +23,21 @@ class DataLead():
         return db
 
     def download_single_movie(self, _title):
-        print(f"The '{_title}' movie will be downloaded now...")
-        link = f'http://www.omdbapi.com/?t={_title}&apikey={self.API_KEY}'
-        content = requests.get(link).json()
-        columns = ['Title', 'Year', 'Runtime',
-                   'Genre', 'Director', 'Actors', 'Writer',
-                   'Language', 'Country', 'Awards',
-                   'imdbRating', 'imdbVotes', 'BoxOffice']
+        c = self.db.cursor()
+        query = '''select title from movies where title=?'''
+        c.execute(query, _title)
+        return c.fetchall()
 
-        dt = [content[col] for col in columns]
-        print(dt)
+        # print(f"The '{_title}' movie will be downloaded now...")
+        # link = f'http://www.omdbapi.com/?t={_title}&apikey={self.API_KEY}'
+        # content = requests.get(link).json()
+        # columns = ['Title', 'Year', 'Runtime',
+        #            'Genre', 'Director', 'Actors', 'Writer',
+        #            'Language', 'Country', 'Awards',
+        #            'imdbRating', 'imdbVotes', 'BoxOffice']
+
+        # dt = [content[col] for col in columns]
+        # print(dt)
 
     def close(self):
         if self.db:
