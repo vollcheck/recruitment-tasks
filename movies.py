@@ -16,7 +16,7 @@ class DataLead():
         db = None
         try:
             db = sqlite3.connect(self.dbname)
-            print("-- Database is ready to go!")
+            print("---> Database is ready to go!")
         except Error as e:
             print(e)
 
@@ -29,7 +29,7 @@ class DataLead():
         title_ = c.fetchone()[0]
 
         # Download the JSON
-        print(f"The '{title_}' movie will be downloaded now...")
+        print(f"The '{title_}' is being downloaded now...")
         link = f'http://www.omdbapi.com/?t={title_}&apikey={self.API_KEY}'
         content = requests.get(link).json()
 
@@ -48,23 +48,36 @@ class DataLead():
         self.db.commit()
         print("The movie has been downloaded.")
 
+    def download_all_movies(self):
+        c = self.db.cursor()
+        c.execute("select title from movies")
+        subfilms = c.fetchall()
+
+        flat_list = [film for sub in subfilms for film in sub]
+        for film in flat_list:
+            self.download_single_movie(film)
+
+
     def close(self):
         if self.db:
             self.db.close()
             self.db = None
-            print("-- The database connection has been closed!")
+            print("---> The database connection has been closed!")
 
 
 if __name__ == "__main__":
     API_KEY = '37ac9525'
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--download_single", help="download one movie")
+    parser.add_argument("--download_all", action='store_true', help="download all movies")
     parser.add_argument("--sort_by", help="sort movies by columns")
-    parser.add_argument("--download_single", help="download only one movie")
     args = parser.parse_args()
 
     with contextlib.closing(DataLead('movies.sqlite', API_KEY)) as DL:
         if not any(vars(args).values()):
             print("There are no arguments passed222!")
+        elif args.download_all:
+            DL.download_all_movies()
         elif args.download_single:
             DL.download_single_movie(args.download_single)
