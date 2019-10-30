@@ -22,22 +22,31 @@ class DataLead():
 
         return db
 
-    def download_single_movie(self, _title):
+    def download_single_movie(self, t):
+        # Pull out the title from db
         c = self.db.cursor()
-        query = '''select title from movies where title=?'''
-        c.execute(query, _title)
-        return c.fetchall()
+        c.execute("select title from movies where title=?", (t,))
+        title_ = c.fetchone()[0]
 
-        # print(f"The '{_title}' movie will be downloaded now...")
-        # link = f'http://www.omdbapi.com/?t={_title}&apikey={self.API_KEY}'
-        # content = requests.get(link).json()
-        # columns = ['Title', 'Year', 'Runtime',
-        #            'Genre', 'Director', 'Actors', 'Writer',
-        #            'Language', 'Country', 'Awards',
-        #            'imdbRating', 'imdbVotes', 'BoxOffice']
+        # Download the JSON
+        print(f"The '{title_}' movie will be downloaded now...")
+        link = f'http://www.omdbapi.com/?t={title_}&apikey={self.API_KEY}'
+        content = requests.get(link).json()
 
-        # dt = [content[col] for col in columns]
-        # print(dt)
+        # Pull the data from JSON
+        columns = ['Year', 'Runtime', 'Genre', 'Director', 'Actors', 'Writer',
+                   'Language', 'Country', 'Awards', 'imdbRating',
+                   'imdbVotes', 'BoxOffice', 'Title']
+
+        dt = [content[col] for col in columns]
+
+        # Updating DB
+        query_update = '''update movies set year=?, runtime=?, genre=?,
+        director=?, cast=?, writer=?, language=?, country=?, awards=?,
+        imdb_rating=?, imdb_votes=?, box_office=? where title=?'''
+        c.execute(query_update, dt)
+        self.db.commit()
+        print("The movie has been downloaded.")
 
     def close(self):
         if self.db:
