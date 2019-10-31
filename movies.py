@@ -28,18 +28,6 @@ class DataLead():
         c.execute("select title from movies where title=?", (t,))
         title_ = c.fetchone()[0]
 
-        # Download the JSON
-        print(f"The '{title_}' is being downloaded now...")
-        link = f'http://www.omdbapi.com/?t={title_}&apikey={self.API_KEY}'
-        content = requests.get(link).json()
-
-        # Pull the data from JSON
-        columns = ['Year', 'Runtime', 'Genre', 'Director', 'Actors', 'Writer',
-                   'Language', 'Country', 'Awards', 'imdbRating',
-                   'imdbVotes', 'BoxOffice', 'Title']
-
-        dt = [content[col] for col in columns]
-
         # Updating DB
         query_update = '''update movies set year=?, runtime=?, genre=?,
         director=?, cast=?, writer=?, language=?, country=?, awards=?,
@@ -49,7 +37,7 @@ class DataLead():
         print("The movie has been downloaded.")
 
     def movie_json(self, title_):
-        # print(f"The '{title_}' is being downloaded now...")
+        print(f"The '{title_}' is being downloaded now...")
         link = f'http://www.omdbapi.com/?t={title_}&apikey={self.API_KEY}'
         content = requests.get(link).json()
         # Pull the data from JSON
@@ -63,12 +51,25 @@ class DataLead():
     def download_all_movies(self):
         c = self.db.cursor()
         c.execute("select title from movies")
-        subfilms = c.fetchall()
+        all_nested = c.fetchall()
+        all_films = [film for sub in all_nested for film in sub]
 
-        all_films = [film for sub in subfilms for film in sub]
+        print(all_films)
+
+        # query_update = '''update movies set year=?, runtime=?, genre=?,
+        # director=?, cast=?, writer=?, language=?, country=?, awards=?,
+        # imdb_rating=?, imdb_votes=?, box_office=? where title=?'''
+
+        all = []
         for film in all_films:
-            self.download_single_movie(film)
+            dt = self.movie_json(film)
+            all.append(dt)
 
+        print(all)
+
+        # c.executemany(query_update, dt)
+        # self.db.commit()
+        # #print("The movie has been downloaded.")
 
     def close(self):
         if self.db:
