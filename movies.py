@@ -40,13 +40,13 @@ class DataLead():
                 dt.append(None)
         return dt
 
-    def download_single_movie(self, t):
+    def download_single_movie(self, title):
         # Pull out the title from db to check if the movie is in the base
         c = self.db.cursor()
-        c.execute("select title from movies where title=?", (t,))
-        ti = c.fetchone()[0]
+        c.execute("select title from movies where title=?", (title,))
+        title = c.fetchone()[0]
 
-        dt = self.json_from_api(ti)
+        dt = self.json_from_api(title)
 
         print(dt)
 
@@ -58,31 +58,41 @@ class DataLead():
         self.db.commit()
 
         cnew = self.db.cursor()
-        cnew.execute("select * from movies where title=?", ti)
+        cnew.execute("select * from movies where title=?", (title,))
         print(cnew.fetchone())
-        print(f"The '{ti}' movie has been downloaded.")
+        print(f"The '{title}' movie has been downloaded.")
 
     def download_all_movies(self):
+        # TODO: strip() the titles
         c = self.db.cursor()
         c.execute("select title from movies")
         all_nested = c.fetchall()
 
         # Flatten the list of titles
         all_films = [film for sub in all_nested for film in sub]
+        films_data = []
+        for film in all_films:
+            dt = self.json_from_api(film)
+            films_data.append(dt)
 
         query_update = '''update movies set year=?, runtime=?, genre=?,
         director=?, cast=?, writer=?, language=?, country=?, awards=?,
         imdb_rating=?, imdb_votes=?, box_office=? where title=?'''
 
-        all_d = []
-        for film in all_films:
-            dt = self.json_from_api(film)
-            all_d.append(dt)
-
-        c.executemany(query_update, all_d)
+        c.executemany(query_update, films_data)
 
         self.db.commit()
         print("---> Database has been populated!")
+
+    def sort_by(self, params):
+        c = self.db.cursor()
+        query = '''select title, year from movies order by year desc'''
+        result = c.execute(query).fetchall()
+        for row in result:
+            print(row[1], row[0])
+
+    def filter_by(self, params):
+        pass
 
     def close(self):
         if self.db:
@@ -108,3 +118,5 @@ if __name__ == "__main__":
             DL.download_all_movies()
         elif args.download_single:
             DL.download_single_movie(args.download_single)
+        elif args.sort_by:
+            DL.sort_by(args.sort_by)
