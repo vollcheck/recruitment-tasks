@@ -48,13 +48,25 @@ class DataLead():
         self.db.commit()
         print("The movie has been downloaded.")
 
+    def movie_json(self, title_):
+        # print(f"The '{title_}' is being downloaded now...")
+        link = f'http://www.omdbapi.com/?t={title_}&apikey={self.API_KEY}'
+        content = requests.get(link).json()
+        # Pull the data from JSON
+        columns = ['Year', 'Runtime', 'Genre', 'Director', 'Actors', 'Writer',
+                   'Language', 'Country', 'Awards', 'imdbRating',
+                   'imdbVotes', 'BoxOffice', 'Title']
+
+        dt = [content[col] for col in columns]
+        return dt
+
     def download_all_movies(self):
         c = self.db.cursor()
         c.execute("select title from movies")
         subfilms = c.fetchall()
 
-        flat_list = [film for sub in subfilms for film in sub]
-        for film in flat_list:
+        all_films = [film for sub in subfilms for film in sub]
+        for film in all_films:
             self.download_single_movie(film)
 
 
