@@ -34,6 +34,7 @@ class DataLead():
 
         dt = []
         for col in columns:
+            # Ben Hur case, when there is no BoxOffice column
             if col in content:
                 dt.append(content[col])
             else:
@@ -86,8 +87,8 @@ class DataLead():
 
     def sort_by(self, params):
         c = self.db.cursor()
-        query = '''select title, year from movies order by year desc'''
-        result = c.execute(query).fetchall()
+        query = '''select title, ? from movies order by ? desc'''
+        result = c.execute(f"select title, {params} from movies order by {params}")
         for row in result:
             print(row[1], row[0])
 
