@@ -58,13 +58,13 @@ class DataLead():
         c.execute(query_update, dt)
         self.db.commit()
 
+        # Checking the newly added record
         cnew = self.db.cursor()
         cnew.execute("select * from movies where title=?", (title,))
         print(cnew.fetchone())
         print(f"The '{title}' movie has been downloaded.")
 
     def download_all_movies(self):
-        # TODO: strip() the titles
         c = self.db.cursor()
         c.execute("select title from movies")
         all_nested = c.fetchall()
@@ -87,8 +87,8 @@ class DataLead():
 
     def sort_by(self, params):
         c = self.db.cursor()
-        query = '''select title, ? from movies order by ? desc'''
-        result = c.execute(f"select title, {params} from movies order by {params}")
+        query = f"select title, {params} from movies order by {params}"
+        result = c.execute(query).fetchall()
         for row in result:
             print(row[1], row[0])
 
@@ -107,14 +107,14 @@ if __name__ == "__main__":
     DB_NAME = 'movies.sqlite'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--download_single", help="download one movie")
-    parser.add_argument("--download_all", action='store_true', help="download all movies")
-    parser.add_argument("--sort_by", help="sort movies by columns")
+    parser.add_argument('--download_single', help='download one movie')
+    parser.add_argument('--download_all', action='store_true', help='download all movies')
+    parser.add_argument('--sort_by', help='sort movies by given columns', required=True) # action='append', nargs='+',
     args = parser.parse_args()
 
     with contextlib.closing(DataLead(DB_NAME, API_KEY)) as DL:
         if not any(vars(args).values()):
-            print("There are no arguments passed222!")
+            print("There are no arguments passed!")
         elif args.download_all:
             DL.download_all_movies()
         elif args.download_single:
