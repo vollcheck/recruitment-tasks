@@ -25,11 +25,11 @@ class DataLead():
 
         return db
 
-    def json_from_api(self, title_):
+    def json_from_api(self, title):
         """Downloads the JSON movie's data from API with given title."""
 
-        print(f"The '{title_}' movie is being downloaded now...")
-        link = f'http://www.omdbapi.com/?t={title_}&apikey={self.API_KEY}'
+        print(f"The '{title}' movie is being downloaded now...")
+        link = f'http://www.omdbapi.com/?t={title}&apikey={self.API_KEY}'
         content = requests.get(link).json()
 
         # Pull the data from JSON
@@ -56,7 +56,7 @@ class DataLead():
 
         dt = self.json_from_api(title)
 
-        print(dt)  # Testing purposes
+        print(dt)  # Testing purposes; to delete before 'deploy'
 
         # Updating DB
         query_update = '''update movies set year=?, runtime=?, genre=?,
@@ -73,6 +73,7 @@ class DataLead():
 
     def download_all_movies(self):
         """Function updating data about all movies appearing in the database."""
+
         all_nested = self.c.execute("select title from movies").fetchall()
 
         # Flatten the list of titles
@@ -92,7 +93,6 @@ class DataLead():
         return self.c.lastrowid
 
     def sort_by(self, params):
-        # c = self.db.cursor()
         query = f'select title, {params} from movies order by {params}'
         result = self.c.execute(query).fetchall()
         for row in result:
@@ -125,8 +125,11 @@ class DataLead():
             print("The title is already in the database!\nDownloading aborted.")
         return self.c.lastrowid
 
-    def highscores(self):
-        pass
+    def highscores(self, args):
+        categories = ['runtime', 'box_office', 'imdb_rating']
+        query_select = f"""select title, runtime from movies order by cast(runtime as int) desc"""
+        result1 = self.c.execute(query_select).fetchone()
+        print(f'runtime {result1[0]:<38} {result1[1]}')
 
     def close(self):
         if self.db:
@@ -144,7 +147,7 @@ if __name__ == "__main__":
     parser.add_argument("--download_all", action='store_true', help="download all movies")
     parser.add_argument("--sort_by", help="sort movies by columns")
     parser.add_argument("--add", help="download and add a movie to the db")
-    parser.add_argument("--highscores", action='store_true', help="shows highscores in many categories")
+    parser.add_argument("--highscores", action='store_true', help="shows highscores in many categories") # , action='store_true'
     args = parser.parse_args()
 
     with contextlib.closing(DataLead(DB_NAME, API_KEY)) as DL:
@@ -159,4 +162,4 @@ if __name__ == "__main__":
         elif args.add:
             DL.add(args.add)
         elif args.highscores:
-            DL.add(args.highscores)
+            DL.highscores(args.highscores)
