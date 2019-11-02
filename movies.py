@@ -84,6 +84,7 @@ class DataLead():
 
         self.db.commit()
         print("---> Database has been populated!")
+        return c.lastrowid
 
     def sort_by(self, params):
         c = self.db.cursor()
@@ -100,18 +101,25 @@ class DataLead():
 
     def add(self, title):
         c = self.db.cursor()
-        # Get the JSON data from API
-        dt = self.json_from_api(title)
-        # print(dt)
+        query_select = f"""select * from movies where title='{title}'"""
+        result = c.execute(query_select).fetchall()
 
-        for col in dt:
-            print(col)
+        if not result:
+            dt = self.json_from_api(title)
+            dt.insert(0, dt.pop())  # Move last element to the front
 
-        # Updating DB
-        query_update = '''insert into movies values(?,?,?,?,?,?,?,?,?,?,?,?,?)'''
-        print(f"The '{title}' movie has been downloaded.")
-        print(c.execute(query_update, dt).lastrowid)
-        self.db.commit()
+            # Updating DB
+            query_update = '''insert into movies(title, year, runtime, genre,
+            director, cast, writer, language, country, awards, imdb_rating,
+            imdb_votes, box_office) values(?,?,?,?,?,?,?,?,?,?,?,?,?)'''
+
+            c.execute(query_update, dt)
+            self.db.commit()
+            print(f"The '{title}' movie has been downloaded.")
+        else:
+            print("The title is already in the database!\nDownloading aborted.")
+
+        return c.lastrowid
 
     def highscores(self):
         pass
