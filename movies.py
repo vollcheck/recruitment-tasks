@@ -87,12 +87,33 @@ class DataLead():
 
     def sort_by(self, params):
         c = self.db.cursor()
-        query = f"select title, {params} from movies order by {params}"
+        query = f'select title, {params} from movies order by {params}'
         result = c.execute(query).fetchall()
         for row in result:
-            print(row[1], row[0])
+            print(f'{row[0]:<38} {row[1]}')
 
     def filter_by(self, params):
+        pass
+
+    def compare(self, params):
+        pass
+
+    def add(self, title):
+        c = self.db.cursor()
+        # Get the JSON data from API
+        dt = self.json_from_api(title)
+        # print(dt)
+
+        for col in dt:
+            print(col)
+
+        # Updating DB
+        query_update = '''insert into movies values(?,?,?,?,?,?,?,?,?,?,?,?,?)'''
+        print(f"The '{title}' movie has been downloaded.")
+        print(c.execute(query_update, dt).lastrowid)
+        self.db.commit()
+
+    def highscores(self):
         pass
 
     def close(self):
@@ -107,9 +128,10 @@ if __name__ == "__main__":
     DB_NAME = 'movies.sqlite'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--download_single', help='download one movie')
-    parser.add_argument('--download_all', action='store_true', help='download all movies')
-    parser.add_argument('--sort_by', help='sort movies by given columns', required=True) # action='append', nargs='+',
+    parser.add_argument("--download_single", help="download one movie")
+    parser.add_argument("--download_all", action='store_true', help="download all movies")
+    parser.add_argument("--sort_by", help="sort movies by columns")
+    parser.add_argument("--add", help="download and add a movie to the db")
     args = parser.parse_args()
 
     with contextlib.closing(DataLead(DB_NAME, API_KEY)) as DL:
@@ -121,3 +143,5 @@ if __name__ == "__main__":
             DL.download_single_movie(args.download_single)
         elif args.sort_by:
             DL.sort_by(args.sort_by)
+        elif args.add:
+            DL.add(args.add)
