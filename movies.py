@@ -74,7 +74,7 @@ class DataLead():
     def download_all_movies(self):
         """Function updating data about all movies appearing in the database."""
 
-        all_nested = self.c.execute("select title from movies").fetchall()
+        all_nested = self.c.execute("select trim(title) from movies").fetchall()
 
         # Flatten the list of titles
         all_films = [film for sub in all_nested for film in sub]
@@ -93,6 +93,8 @@ class DataLead():
         return self.c.lastrowid
 
     def sort_by(self, params):
+        """Sorts the database records by given column"""
+
         query = f'select title, {params} from movies order by {params}'
         result = self.c.execute(query).fetchall()
         for row in result:
@@ -104,9 +106,10 @@ class DataLead():
     def compare(self, params):
         pass
 
-    def add(self, title):
+    def add(self, title: str):
         "Adds a data of the movie with given title."
-        query_select = f"""select * from movies where title='{title}'"""
+
+        query_select = f"select * from movies where title='{title}'"
         result = self.c.execute(query_select).fetchall()
 
         if not result:
@@ -126,10 +129,23 @@ class DataLead():
         return self.c.lastrowid
 
     def highscores(self, args):
-        categories = ['runtime', 'box_office', 'imdb_rating']
-        query_select = f"""select title, runtime from movies order by cast(runtime as int) desc"""
-        result1 = self.c.execute(query_select).fetchone()
-        print(f'runtime {result1[0]:<38} {result1[1]}')
+        categories = ['Runtime', 'Box_Office', 'IMDB_Rating', 'Awards']
+
+        query1 = f"""select title, runtime from movies
+        order by cast(runtime as int) desc"""
+        query2 = f"""select title, box_office from movies
+        order by cast(box_office as float) desc"""
+        query3 = f"""select title, imdb_rating from movies
+        order by imdb_rating desc"""
+        query4 = f"""select title, awards from movies
+        order by awards desc"""
+
+        queries = [query1, query2, query3, query4]
+        for q in queries:
+            res = self.c.execute(q).fetchone()
+            print(res[0], res[1])
+
+        # print(f'{categories[2]} {result_awards[0]:<20} {result_awards[1]}')
 
     def close(self):
         if self.db:
@@ -144,10 +160,18 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--update_single", help="update one movie")
-    parser.add_argument("--download_all", action='store_true', help="download all movies")
+    parser.add_argument("--download_all", action='store_true',
+                        help="download all movies")
     parser.add_argument("--sort_by", help="sort movies by columns")
+    parser.add_argument("--filter_by",
+                        choices=['director', 'actor', 'awards', 'language'],
+                        help="sort movies by columns")
+    parser.add_argument("--compare",
+                        choices=['runtime', 'imdb_rating', 'box_office', 'awards'],
+                        help="compare two movies by given value")
     parser.add_argument("--add", help="download and add a movie to the db")
-    parser.add_argument("--highscores", action='store_true', help="shows highscores in many categories") # , action='store_true'
+    parser.add_argument("--highscores", action='store_true',
+                        help="shows highscores in many categories")
     args = parser.parse_args()
 
     with contextlib.closing(DataLead(DB_NAME, API_KEY)) as DL:
