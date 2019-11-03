@@ -72,7 +72,7 @@ class DataLead():
         print(f"The '{title}' movie has been downloaded.")
 
     def download_all_movies(self):
-        """Function updating data about all movies appearing in the database."""
+        """Populates data about all movies appearing in the database."""
 
         all_nested = self.c.execute("select trim(title) from movies").fetchall()
 
@@ -95,13 +95,31 @@ class DataLead():
     def sort_by(self, params):
         """Sorts the database records by given column"""
 
-        query = f'select title, {params} from movies order by {params}'
+        query = f"""select title, {params} from movies
+        order by cast({params} as int) desc"""
         result = self.c.execute(query).fetchall()
         for row in result:
             print(f'{row[0]:<38} {row[1]}')
 
     def filter_by(self, params):
-        pass
+        print(params)
+
+        simple_q = ['director', 'actor', 'language']
+        if params[0] in simple_q:
+            query = f"""select title, {params[0]} from movies
+            where {params[0]} like '%{params[1]}%'"""
+            result = self.c.execute(query).fetchall()
+
+            print(f'title {params[0]:>35}')
+            for row in result:
+                print(f'{row[0]:<30} {row[1]}')
+
+        elif params[0] == 'earned_milion':
+            query = f"""select title, box_office from movies"""
+            result = self.c.execute(query).fetchone()
+            print(result)
+            # print("Here will be fetched result")
+
 
     def compare(self, params):
         pass
@@ -162,9 +180,11 @@ if __name__ == "__main__":
     parser.add_argument("--update_single", help="update one movie")
     parser.add_argument("--download_all", action='store_true',
                         help="download all movies")
-    parser.add_argument("--sort_by", help="sort movies by columns")
+    parser.add_argument("--sort_by",
+                        # nargs='+',
+                        help="sort movies by columns")
     parser.add_argument("--filter_by",
-                        choices=['director', 'actor', 'awards', 'language'],
+                        nargs='+',
                         help="sort movies by columns")
     parser.add_argument("--compare",
                         choices=['runtime', 'imdb_rating', 'box_office', 'awards'],
@@ -183,6 +203,8 @@ if __name__ == "__main__":
             DL.update_single_movie(args.update_single)
         elif args.sort_by:
             DL.sort_by(args.sort_by)
+        elif args.filter_by:
+            DL.filter_by(args.filter_by)
         elif args.add:
             DL.add(args.add)
         elif args.highscores:
