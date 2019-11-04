@@ -1,6 +1,20 @@
 #+TITLE: Tasks for Profil-Software recruitment process.
 
 * Getting started
+** Firstly, you have to populate the database by using the following command:
 #+BEGIN_SRC
 python movies.py --download_all
-#+END_SRC
+#+END_SR
+
+** Then you are able to make use of the rest of the functions:
+1. ~python movies.py --sort_by [COLUMN NAME]~ where you insert the name of the column that you want to sort by.
+2. ~python movies.py --filter_by [CATEGORY] [PARAMETER]~ where category can be:
+   + ~director~ and as a parameter you append the name or/and surname of the director
+   + ~actor~ and, as you see above, append the name or/and surname of the actor
+   + ~language~
+   + ~nominated~ will result in list of movies that received nomination for Oscar, but did not win any
+   + ~percentage~ where 80% of nominations turn into an award
+   + ~earned_milion~ lists all films that earned more than $100,000,000 by the according to Box Office
+3. ~python movies.py --compare [CATEGORY] [MOVIE 1] [MOVIE 2]~ where you must provide category of comparison two movies for being compared
+4. ~python movies.py --add [TITLE]~ adds a film and its data automatically downloaded from API
+5. ~python movies.py --highscores~ lists all highscores in particular category
