@@ -146,7 +146,6 @@ class DataLead():
             for row in result:
                 print(f"{row[0]:<30} {row[1]}")
 
-
     def compare(self, params):
         """
         First argument should be the category of comparison, and last two
@@ -154,19 +153,66 @@ class DataLead():
         """
 
         print(params)
-
         query = f"""select title, {params[0]} from movies
         where title='{params[1]}' or title='{params[2]}'"""
         result = self.c.execute(query).fetchall()
 
-        time1 = row[0][1][:3]
-        time2 = row[1][1][:3]
+        print("result: ", result)
+        m1 = result[0]
+        m2 = result[1]
 
-        print
+        #if isinstance(m1[1], str):
+        if params[0] == 'runtime':
+            num1 = [int(s) for s in m1[1].split() if s.isdigit()]
+            num2 = [int(s) for s in m2[1].split() if s.isdigit()]
+            print(num1)
+            print(num2)
 
-        for row in result:
-             = int(row[1][:3])
-            print(i)
+        elif params[0] == 'imdb_rating':
+            num1 = m1[1]
+            num2 = m2[1]
+            high, low = [m1, m2] if num1 > num2 else [m2, m1]
+            # low = m1 if num1 < num2 else m2
+
+            print("high", high)
+            print("low", low)
+            # if num1 == num2:
+            #     print(f"Movies are equal to each other comparing on {params[0]}")
+            # elif num1 > num2:
+            #     high = m1
+            #     low = m2
+            #     print(f"{m1[0]}({m1[1]}) has higher {params[0]} than {m2[0]}({m2[1]})")
+            # else:
+            #     high = m2
+            #     low = m1
+
+        elif params[0] == 'box_office':
+
+            if num1 == num2:
+                print(f"Movies are equal to each other comparing on {params[0]}")
+            elif num1 > num2:
+                high = m1
+                low = m2
+                print(f"{m1[0]}({m1[1]}) has higher {params[0]} than {m2[0]}({m2[1]})")
+            else:
+                high = m2
+                low = m1
+
+            print(f"{high[0]}({high[1]}) has higher {params[0]} than {low[0]}({low[1]})")
+
+        #     if not int(movie1[1]) == int(movie2[1]):
+        #         print(f"Movies are equal to each other comparing on {params[0]}")
+        #         return result
+        #     elif int(movie1[1]) > int(movie2[1]):
+        #         high = movie1
+        #         low = movie2
+        #     else:
+        #         high = movie2
+        #         low = movie1
+
+        #     print(f"'{movie1[0]}'({movie1[1]}) has higher {params[0]} than '{movie2[0]}'({movie2[1]})")
+        #     return result
+
 
     def add(self, title: str):
         "Adds a data of the movie with given title."
