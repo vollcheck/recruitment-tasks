@@ -46,30 +46,6 @@ class DataLead():
                 dt.append(None)
         return dt
 
-    def update_single_movie(self, title):
-        """Function is made for easier development process."""
-
-        # Pull out the title from db to check if the movie is in the base
-        self.c.execute("select title from movies where title=?", (title,))
-        title = self.c.fetchone()[0]
-
-        dt = self.json_from_api(title)
-
-        print(dt)  # Testing purposes; to delete before 'deploy'
-
-        # Updating DB
-        query_update = '''update movies set year=?, runtime=?, genre=?,
-        director=?, cast=?, writer=?, language=?, country=?, awards=?,
-        imdb_rating=?, imdb_votes=?, box_office=? where title=?'''
-        self.c.execute(query_update, dt)
-        self.db.commit()
-
-        # Checking the newly added record
-        cnew = self.db.cursor()
-        cnew.execute("select * from movies where title=?", (title,))
-        print(cnew.fetchone())
-        print(f"The '{title}' movie has been downloaded.")
-
     def download_all_movies(self):
         """Populates data about all movies appearing in the database."""
 
@@ -99,6 +75,8 @@ class DataLead():
         result = self.c.execute(query).fetchall()
         for row in result:
             print(f'{row[0]:<38} {row[1]}')
+
+        return result
 
     def filter_by(self, params):
         """
@@ -146,73 +124,56 @@ class DataLead():
             for row in result:
                 print(f"{row[0]:<30} {row[1]}")
 
+        return result
+
     def compare(self, params):
         """
         First argument should be the category of comparison, and last two
         args should be the titles of movies to compare.
         """
 
-        print(params)
         query = f"""select title, {params[0]} from movies
         where title='{params[1]}' or title='{params[2]}'"""
         result = self.c.execute(query).fetchall()
 
-        print("result: ", result)
-        m1 = result[0]
-        m2 = result[1]
+        m1, m2 = result[0], result[1]
+        num1, num2 = m1[1], m2[1]
 
-        #if isinstance(m1[1], str):
         if params[0] == 'runtime':
-            num1 = [int(s) for s in m1[1].split() if s.isdigit()]
-            num2 = [int(s) for s in m2[1].split() if s.isdigit()]
-            print(num1)
-            print(num2)
-
-        elif params[0] == 'imdb_rating':
-            num1 = m1[1]
-            num2 = m2[1]
-            high, low = [m1, m2] if num1 > num2 else [m2, m1]
-            # low = m1 if num1 < num2 else m2
-
-            print("high", high)
-            print("low", low)
-            # if num1 == num2:
-            #     print(f"Movies are equal to each other comparing on {params[0]}")
-            # elif num1 > num2:
-            #     high = m1
-            #     low = m2
-            #     print(f"{m1[0]}({m1[1]}) has higher {params[0]} than {m2[0]}({m2[1]})")
-            # else:
-            #     high = m2
-            #     low = m1
-
+            num1 = [int(s) for s in m1[1].split() if s.isdigit()][0]
+            num2 = [int(s) for s in m2[1].split() if s.isdigit()][0]
         elif params[0] == 'box_office':
-
-            if num1 == num2:
-                print(f"Movies are equal to each other comparing on {params[0]}")
-            elif num1 > num2:
-                high = m1
-                low = m2
-                print(f"{m1[0]}({m1[1]}) has higher {params[0]} than {m2[0]}({m2[1]})")
+            num1 = 0 if 'N/A' in m1 else int(m1[1].replace(',', '').replace('$',''))
+            num2 = 0 if 'N/A' in m2 else int(m2[1].replace(',', '').replace('$',''))
+        elif params[0] == 'awards':
+            if 'wins' in num1:
+                num1 = num1.split(" wins")[0]
+                s = num1.rfind(' ')
+                num1 = int(num1[s+1:])
             else:
-                high = m2
-                low = m1
+                num1 = 0
+            if 'wins' in num2:
+                num2 = num2.split(" wins")[0]
+                s = num2.rfind(' ')
+                num2 = int(num2[s+1:])
+            else:
+                num2 = 0
 
-            print(f"{high[0]}({high[1]}) has higher {params[0]} than {low[0]}({low[1]})")
+        if num1 is num2:
+            res = f"Compared movies has the same score in {params[0]}."
+            print(res)
+        else:
+            if num1 > num2:
+                high = [m1[0], num1]
+                low = [m2[0], num2]
+            else:
+                high = [m2[0], num2]
+                low = [m1[0], num1]
+            res = f"""'{high[0]}' ({high[1]}) has more awards
+            than '{low[0]}' ({low[1]})"""
+            print(res)
 
-        #     if not int(movie1[1]) == int(movie2[1]):
-        #         print(f"Movies are equal to each other comparing on {params[0]}")
-        #         return result
-        #     elif int(movie1[1]) > int(movie2[1]):
-        #         high = movie1
-        #         low = movie2
-        #     else:
-        #         high = movie2
-        #         low = movie1
-
-        #     print(f"'{movie1[0]}'({movie1[1]}) has higher {params[0]} than '{movie2[0]}'({movie2[1]})")
-        #     return result
-
+        return res
 
     def add(self, title: str):
         "Adds a data of the movie with given title."
@@ -267,7 +228,6 @@ if __name__ == "__main__":
     DB_NAME = 'movies.sqlite'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--update_single", help="update one movie")
     parser.add_argument("--download_all", action='store_true',
                         help="download all movies")
     parser.add_argument("--sort_by",
@@ -289,8 +249,6 @@ if __name__ == "__main__":
             print("There are no arguments passed!")
         elif args.download_all:
             DL.download_all_movies()
-        elif args.update_single:
-            DL.update_single_movie(args.update_single)
         elif args.sort_by:
             DL.sort_by(args.sort_by)
         elif args.filter_by:
