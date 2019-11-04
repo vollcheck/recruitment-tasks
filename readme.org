@@ -4,7 +4,7 @@
 =python movies.py --download_all=
 
 ** Then you are able to make use of the rest of the functions:
-1. ~ python movies.py --sort_by [COLUMN NAME] ~ where you insert the name of the column that you want to sort by.
+1. ~python movies.py --sort_by [COLUMN NAME]~ where you insert the name of the column that you want to sort by.
 2. ~python movies.py --filter_by [CATEGORY] [PARAMETER]~ where category can be:
    + ~director~ and as a parameter you append the name or/and surname of the director
    + ~actor~ and, as you see above, append the name or/and surname of the actor
