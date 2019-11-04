@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import sqlite3
-from sqlite3 import Error
 import requests
 import argparse
 import contextlib
@@ -20,7 +19,7 @@ class DataLead():
         try:
             db = sqlite3.connect(self.dbname)
             print("---> Database is ready to go!")
-        except Error as e:
+        except sqlite3.Error as e:
             print(e)
 
         return db
@@ -102,27 +101,72 @@ class DataLead():
             print(f'{row[0]:<38} {row[1]}')
 
     def filter_by(self, params):
-        print(params)
+        """
+        Function allows to filter movies by specified category
+        included in the README.
+        """
 
         simple_q = ['director', 'actor', 'language']
         if params[0] in simple_q:
             query = f"""select title, {params[0]} from movies
             where {params[0]} like '%{params[1]}%'"""
             result = self.c.execute(query).fetchall()
-
             print(f'title {params[0]:>35}')
             for row in result:
                 print(f'{row[0]:<30} {row[1]}')
 
+        elif params[0] == 'nominated':
+            query = """select title, awards from movies
+            where awards like 'Nominated for _ Oscars%'"""
+            result = self.c.execute(query).fetchall()
+            for row in result:
+                print(f"{row[0]:<30} {row[1].split('.')[0]}")
+
+        elif params[0] == 'percentage':
+            query = """select title, awards from movies
+            where awards like '%wins & %'"""
+            result = self.c.execute(query).fetchall()
+            print(f'title {params[0]:>40}')
+            for row in result:
+                newrow = row[1].split('.')
+                if '&' in newrow[0]:
+                    string = newrow[0]
+                else:
+                    string = newrow[1]
+                numbers = [int(s) for s in string.split() if s.isdigit()]
+                percentage = numbers[0]/numbers[1]
+                if (float(percentage) >= 0.8):
+                    print(f"{row[0]:<30} {percentage}")
+
         elif params[0] == 'earned_milion':
-            query = f"""select title, box_office from movies"""
-            result = self.c.execute(query).fetchone()
-            print(result)
-            # print("Here will be fetched result")
+            query = """select title, box_office from movies
+            where box_office like '$___,___,___%'"""
+            result = self.c.execute(query).fetchall()
+            print(f'title {params[0]:>35}')
+            for row in result:
+                print(f"{row[0]:<30} {row[1]}")
 
 
     def compare(self, params):
-        pass
+        """
+        First argument should be the category of comparison, and last two
+        args should be the titles of movies to compare.
+        """
+
+        print(params)
+
+        query = f"""select title, {params[0]} from movies
+        where title='{params[1]}' or title='{params[2]}'"""
+        result = self.c.execute(query).fetchall()
+
+        time1 = row[0][1][:3]
+        time2 = row[1][1][:3]
+
+        print
+
+        for row in result:
+             = int(row[1][:3])
+            print(i)
 
     def add(self, title: str):
         "Adds a data of the movie with given title."
@@ -187,7 +231,7 @@ if __name__ == "__main__":
                         nargs='+',
                         help="sort movies by columns")
     parser.add_argument("--compare",
-                        choices=['runtime', 'imdb_rating', 'box_office', 'awards'],
+                        nargs='+',
                         help="compare two movies by given value")
     parser.add_argument("--add", help="download and add a movie to the db")
     parser.add_argument("--highscores", action='store_true',
@@ -205,6 +249,8 @@ if __name__ == "__main__":
             DL.sort_by(args.sort_by)
         elif args.filter_by:
             DL.filter_by(args.filter_by)
+        elif args.compare:
+            DL.compare(args.compare)
         elif args.add:
             DL.add(args.add)
         elif args.highscores:
