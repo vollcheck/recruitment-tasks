@@ -27,6 +27,7 @@ class DataLead():
     def json_from_api(self, title):
         """Downloads the JSON movie's data from API with given title."""
 
+        # Get the JSON
         print(f"The '{title}' movie is being downloaded now...")
         link = f'http://www.omdbapi.com/?t={title}&apikey={self.API_KEY}'
         content = requests.get(link).json()
@@ -36,7 +37,6 @@ class DataLead():
                    'Language', 'Country', 'Awards', 'imdbRating',
                    'imdbVotes', 'BoxOffice', 'Title']
 
-        # dt = [content[col] for col in columns]
         dt = []
         for col in columns:
             # Ben Hur case, when there is no BoxOffice column
@@ -49,10 +49,11 @@ class DataLead():
     def download_all_movies(self):
         """Populates data about all movies appearing in the database."""
 
-        all_nested = self.c.execute("select trim(title) from movies").fetchall()
+        # See, what titles you have to download.
+        all_nestd = self.c.execute("select trim(title) from movies").fetchall()
 
         # Flatten the list of titles
-        all_films = [film for sub in all_nested for film in sub]
+        all_films = [film for sub in all_nestd for film in sub]
         films_data = []
         for film in all_films:
             dt = self.json_from_api(film)
@@ -198,23 +199,13 @@ class DataLead():
         return self.c.lastrowid
 
     def highscores(self, args):
-        categories = ['Runtime', 'Box_Office', 'IMDB_Rating', 'Awards']
+        params = 'imdb_rating', 'runtime'
 
-        query1 = f"""select title, runtime from movies
-        order by cast(runtime as int) desc"""
-        query2 = f"""select title, box_office from movies
-        order by cast(box_office as float) desc"""
-        query3 = f"""select title, imdb_rating from movies
-        order by imdb_rating desc"""
-        query4 = f"""select title, awards from movies
-        order by awards desc"""
-
-        queries = [query1, query2, query3, query4]
-        for q in queries:
-            res = self.c.execute(q).fetchone()
-            print(res[0], res[1])
-
-        # print(f'{categories[2]} {result_awards[0]:<20} {result_awards[1]}')
+        for p in params:
+            template_query = f"""select title, {p} from movies
+            order by cast({p} as int) desc"""
+            res = self.c.execute(template_query).fetchone()
+            print(f"{p}: {res[0]} -- {res[1]}")
 
     def close(self):
         if self.db:
