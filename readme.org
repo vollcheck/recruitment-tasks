@@ -1,6 +1,5 @@
 #+TITLE: Tasks for Profil-Software recruitment process.
 
-* Getting started
 ** Firstly, you have to populate the database by using the following command:
 =python movies.py --download_all=
 
@@ -13,6 +12,6 @@
    + ~nominated~ will result in list of movies that received nomination for Oscar, but did not win any
    + ~percentage~ where 80% of nominations turn into an award
    + ~earned_milion~ lists all films that earned more than $100,000,000 by the according to Box Office
-3. ~python movies.py --compare [CATEGORY] [MOVIE 1] [MOVIE 2]~ where you must provide category of comparison two movies for being compared
+3. ~python movies.py --compare [CATEGORY] [MOVIE 1] [MOVIE 2]~ where you must provide category of comparison and two movies for being compared
 4. ~python movies.py --add [TITLE]~ adds a film and its data automatically downloaded from API
 5. ~python movies.py --highscores~ lists all highscores in particular category
